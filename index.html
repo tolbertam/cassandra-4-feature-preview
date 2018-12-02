@@ -347,10 +347,10 @@ Results:
 						<h2>Transient Replication</h2>
 						<ul>
 							<li>Increase availability without committing to full replicas</li>
+							<li class="fragment">When defining replication factor, specify number of transient replicas</li>
 							<li class="fragment">'Transient Replicas' only store data when not enough normal replicas are available, or if normal replicas are slow</li>
 							<li class="fragment">For reads, if enough replicas are available for CL and data is available on a normal replicas, request can succeed</li>
-							<li class="fragment">Data is removed from transient replicas on successful repair to normal replicas</li>
-							<li class="fragment">Concept comes from <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.146.3429&rep=rep1&type=pdf">Voting with Witnesses: A Consistency Schema for Replicated Files</a></li>
+							<li class="fragment">Data is removed from transient replicas on successful incremental repair to normal replicas</li>
 						</ul>
 						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14404">CASSANDRA-14404</a></div>
 					</section>
