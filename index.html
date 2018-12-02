@@ -334,7 +334,41 @@ Results:
 					<h1>Experimental Features</h1>
 				</section>
 				<section>
-					<h2>Transient Replication</h2>
+					<h2>Experimental Features</h2>
+					<ul>
+						<li>New features can now be phased in as 'experimental'</li>
+						<li class="fragment">Good way to make features available for evaluation and prove out</li>
+						<li class="fragment">Are disabled by default, but can be enabled in cassandra.yaml</li>
+						<li class="fragment"><a href="http://mail-archives.apache.org/mod_mbox/cassandra-user/201710.mbox/%3CetPan.59f24f38.438f4e99.74dc@apple.com%3E">Materialized views are now labeled experimental</a> (but enabled by default)</li>
+					</ul>
+				</section>
+				<section>
+					<section>
+						<h2>Transient Replication</h2>
+						<ul>
+							<li>Increase availability without committing to full replicas</li>
+							<li class="fragment">'Transient Replicas' only store data when not enough normal replicas are available, or if normal replicas are slow</li>
+							<li class="fragment">For reads, if enough replicas are available for CL and data is available on a normal replicas, request can succeed</li>
+							<li class="fragment">Data is removed from transient replicas on successful repair to normal replicas</li>
+							<li class="fragment">Concept comes from <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.146.3429&rep=rep1&type=pdf">Voting with Witnesses: A Consistency Schema for Replicated Files</a></li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14404">CASSANDRA-14404</a></div>
+					</section>
+					<section>
+						<h2>Using Transient Replication</h2>
+						<ul>
+							<li>Set <code>enable_transient_replication</code> to true in <code>cassandra.yaml</code></li>
+							<li>Set <code>num_tokens</code> to 1 (does not support vnodes yet)</li>
+						</ul>
+						<pre><code class="sql" data-trim>
+CREATE KEYSPACE tr WITH replication = {
+  'class': 'NetworkTopologyStrategy',
+  'datacenter1': '5/2'
+};
+
+CREATE TABLE tbl (k int primary key, v int) 
+  WITH read_repair = 'NONE';</code></pre>
+					</section>
 				</section>
 				<section>
 					<h2>Java 11 Support</h2>
@@ -382,6 +416,8 @@ Results:
 					<h2>CQL Enhancements</h2>
 				</section>
 				<section>
+					<h2>Hybrid Speculative Retry</h2>
+				<section>
 					<section>
 						<h2><code>nodetool</code></h2>
 						<ul>
@@ -414,7 +450,6 @@ Results:
 						<li>COMPACT STORAGE is no longer supported</li>
 						<li>TTL is now considered in breaking timestamp ties</li>
 						<li>Can now have multiple C* nodes on same IP (<a href="https://issues.apache.org/jira/browse/CASSANDRA-7544">CASSANDRA-7544</a>)</li>
-						<li><code>nodetool refresh</code> replaced with <code>nodetool import</code> (<a href="https://issues.apache.org/jira/browse/CASSANDRA-6719">CASSANDRA-6719</a>)</li>
 						<li>Diagnostic Events (<a href="https://issues.apache.org/jira/browse/CASSANDRA-12944">CASSANDRA-12944</a>)</li>
 					</ul>
 				</section>
