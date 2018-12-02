@@ -4,10 +4,10 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Cassandra 4 Feature Preview</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+		<link rel="stylesheet" href="css/theme/cassandra4.css">
 
 		<!-- Theme used for syntax highlighting of code -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -24,8 +24,360 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<h2>Apache Cassandra 4.0 Feature Preview</h2>
+					<div class="footer" style="text-align:center">Andy Tolbert</div>
+					<div class="footer" style="text-align:center">Hosted online at: <a href="http://tolbert.am/cassandra-4-feature-preview">http://tolbert.am/cassandra-4-feature-preview</a></div>
+				</section>
+				<section>
+					<h2>whoami</h2>
+					<ul>
+						<li>Andy Tolbert</li>
+						<li>Software Engineer @ <a href="http://www.datastax.com">DataStax</a> on Drivers Team</li>
+						<li>Work on Java and Node.js Drivers</li>
+						<li>Rochester, MN</li>
+						<li><a href="http://twitter.com/tolbertam">@tolbertam</a></li>
+					</ul>
+				</section>
+				<section>
+					<h2>Motivation</h2>
+					<ul>
+						<li>This talk may be premature..no imminent C* 4.0 Release Date</li>
+						<li class="fragment">C* 4.0 entered <span class="fragment highlight-blue visible current-fragment">Feature Freeze</span> in September</li>
+						<li class="fragment">Good to orient yourself with what's coming..</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Agenda</h2>
+					<ul>
+						<li>New Features</li>
+						<li>Evaluation of new Garbage Collectors</li>
+						<li>Tooling</li>
+						<li>Enhancements</li>
+						<li>Q&amp;A</li>
+					</ul>
+				</section>
+				<section>
+					<h1>New Features</h1>
+				</section>
+				<section>
+					<section>
+						<h2>Audit Logging</h2>
+						<ul>
+							<li>Provides visibility to how system is accessed and used</li>
+							<li>Valued by enterprises for especially when it comes to certifications and regulations</li>
+							<li>Logs all login attempts in addition to all commands executed over client native protocol</li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-7622">CASSANDRA-7622</a>,&nbsp;<a href="https://github.com/apache/cassandra/blob/trunk/doc/source/operating/audit_logging.rst">docs</a></div>
+					</section>
+					<section>
+						<h2>Configuration</h2>
+						<ul>
+							<li><code>audit_logging</code> section of <code>cassandra.yaml</code></li>
+							<li>Can be enabled and disabled on the fly using <code>nodetool enable/disableauditlog</code></li>
+							<li>Comes with 2 implementations: SLF4J and binary format</li>
+							<li>Is pluggable, so you can write your own <code>IAuditLogger</code></li>
+							<li>Offers plenty of filtering options</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Logger-based output</h2>
+						<ul>
+							<li>Configurable using SLF4J</li>
+							<li>Logs to system.log by default</li>
+						</ul>
+						<pre><code class="bash" data-trim>
+user:cassandra|host:127.0.0.1:7000|source:/127.0.0.1|port:44826|
+  timestamp:1543713221085|type:LOGIN_SUCCESS|category:AUTH|
+  operation:LOGIN SUCCESSFUL
+
+user:cassandra|host:127.0.0.1:7000|source:/127.0.0.1|port:44826|
+  timestamp:1543713221184|type:SELECT|category:QUERY|
+  ks:simple|scope:tbl|operation:select * from simple.tbl;
+
+user:null|host:127.0.0.1:7000|source:/127.0.0.1|port:44828|
+  timestamp:1543713227014|type:LOGIN_ERROR|category:AUTH|
+  operation:LOGIN FAILURE; Provided username baduser and/or 
+  password are incorrect</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>System Views</h2>
+						<ul>
+							<li>Tables that provide information about local node</li>
+							<li>Provides more convienient access to metrics than JMX</li>
+							<li>Uses new Virtual Tables feature</li>
+							<li>Exposed through <tt>system_views</tt> keyspace</li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-7622">CASSANDRA-7622</a></div>
+					</section>
+					<section>
+						<h3><code>system_views.settings</code></h3>
+						<ul>
+							<li>Show live settings configuration</li>
+						</ul>
+						<pre><code class="bash" data-trim>
+cqlsh&gt; select * from system_views.settings;
+
+ name                                        | value
+---------------------------------------------+--------
+                      start_native_transport |   true
+                                storage_port |   7000
+                      stream_entire_sstables |   true
+ stream_throughput_outbound_megabits_per_sec |    200
+              streaming_connections_per_host |      1
+         streaming_keep_alive_period_in_secs |    300
+                 tombstone_failure_threshold | 100000
+                    tombstone_warn_threshold |   1000
+                         tracetype_query_ttl |  86400
+                        tracetype_repair_ttl | 604800</code></pre>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14573">CASSANDRA-14573</a></div>
+					</section>
+					<section>
+						<h3><code>system_views.thread_pools</code></h3>
+						<ul>
+							<li>Show thread pool usage statistics</li>
+							<li>Similar output to <code>nodetool tpstats</code></li>
+						</ul>
+						<pre><code class="bash" style="font-size: 8pt; line-height: 1;" data-trim>
+cqlsh&gt; select * from system_views.thread_pools;
+
+ name                         | active_tasks | active_tasks_limit | blocked_tasks | blocked_tasks_all_time | completed_tasks | pending_tasks
+------------------------------+--------------+--------------------+---------------+------------------------+-----------------+---------------
+             AntiEntropyStage |            0 |                  1 |             0 |                      0 |               0 |             0
+         CacheCleanupExecutor |            0 |                  1 |             0 |                      0 |               0 |             0
+           CompactionExecutor |            1 |                  2 |             0 |                      0 |             236 |             0
+         CounterMutationStage |            0 |                 32 |             0 |                      0 |               0 |             0
+                  GossipStage |            0 |                  1 |             0 |                      0 |            1655 |             0
+              HintsDispatcher |            0 |                  2 |             0 |                      0 |               0 |             0
+        InternalResponseStage |            0 |                  4 |             0 |                      0 |               1 |             0
+          MemtableFlushWriter |            1 |                  2 |             0 |                      0 |              61 |             0
+            MemtablePostFlush |            1 |                  1 |             0 |                      0 |             105 |             0
+        MemtableReclaimMemory |            0 |                  1 |             0 |                      0 |              61 |             0
+               MigrationStage |            0 |                  1 |             0 |                      0 |              22 |             0
+                    MiscStage |            0 |                  1 |             0 |                      0 |               0 |             0
+                MutationStage |            4 |                 32 |             0 |                      0 |         1674970 |             1
+    Native-Transport-Requests |           20 |                128 |             0 |                  12977 |         2622028 |             0
+       PendingRangeCalculator |            0 |                  1 |             0 |                      0 |               3 |             0
+ PerDiskMemtableFlushWriter_0 |            1 |                  2 |             0 |                      0 |              61 |             0
+              ReadRepairStage |            0 |                  4 |             0 |                      0 |               0 |             0
+                    ReadStage |            1 |                 32 |             0 |                      0 |          487835 |             1
+                  Repair-Task |            0 |         2147483647 |             0 |                      0 |               0 |             0
+         RequestResponseStage |            0 |                  4 |             0 |                      0 |               7 |             0
+                      Sampler |            0 |                  1 |             0 |                      0 |               0 |             0
+     SecondaryIndexManagement |            0 |                  1 |             0 |                      0 |               0 |             0
+           ValidationExecutor |            0 |         2147483647 |             0 |                      0 |               0 |             0
+            ViewBuildExecutor |            0 |                  1 |             0 |                      0 |               0 |             0
+            ViewMutationStage |            0 |                 32 |             0 |                      0 |               0 |             0</code></pre>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14523">CASSANDRA-14523</a></div>
+					</section>
+					<section>
+						<h3><code>system_views.caches</code></h3>
+						<ul>
+							<li>Show cache statistics</li>
+							<li>Similar output to <code>nodetool info</code></li>
+						</ul>
+						<pre><code class="bash" style="font-size: 8pt; line-height: 1;" data-trim>
+cqlsh> select * from system_views.caches;
+
+ name     | capacity_bytes | entry_count | hit_count | hit_ratio | recent_hit_rate_per_second | recent_request_rate_per_second | request_count | size_bytes
+----------+----------------+-------------+-----------+-----------+----------------------------+--------------------------------+---------------+------------
+   chunks |       95420416 |          19 |      1021 |  0.965028 |                         19 |                             22 |          1058 |     311296
+ counters |       12582912 |           0 |         0 |       NaN |                          0 |                              0 |             0 |          0
+     keys |       25165824 |      249751 |    297971 |  0.547795 |                        268 |                            484 |        543946 |   21978104
+     rows |              0 |           0 |         0 |       NaN |                          0 |                              0 |             0 |          0</code></pre>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14538">CASSANDRA-14538</a></div>
+					</section>
+					<section>
+						<h3><code>system_views.clients</code></h3>
+						<ul>
+							<li>Show client connections</li>
+						</ul>
+						<pre><code class="bash" style="font-size: 8pt; line-height: 1;" data-trim>
+cqlsh&gt; select * from system_views.clients;
+
+ address   | port  | connection_stage | driver_name                                  | driver_version | hostname  | protocol_version | request_count | ssl_cipher_suite | ssl_enabled | ssl_protocol | username
+-----------+-------+------------------+----------------------------------------------+----------------+-----------+------------------+---------------+------------------+-------------+--------------+-----------
+ 127.0.0.1 | 43522 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           423 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43524 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           419 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43530 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           418 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43536 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           419 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43540 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           419 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43546 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           418 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43552 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           419 |             null |       False |         null | anonymous
+ 127.0.0.1 | 43556 |            ready | DataStax Node.js Driver for Apache Cassandra |          4.0.0 | localhost |                4 |           419 |             null |       False |         null | anonymous</code></pre>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14458">CASSANDRA-14458</a></div>
+					</section>
+					<section>
+						<h3><code>system_views.sstable_tasks</code></h3>
+						<ul>
+							<li>Shows active compactions</li>
+							<li>Similar output to <code>nodetool compactionstats</code></li>
+						</ul>
+						<pre><code class="bash" style="font-size: 10pt;" data-trim>
+cqlsh&gt; select * from system_views.sstable_tasks;
+
+ keyspace_name | table_name | task_id                              | kind       | progress | total    | unit
+---------------+------------+--------------------------------------+------------+----------+----------+-------
+     keyspace1 |  standard1 | 07efc380-f5cb-11e8-a574-a73cf9e584bb | compaction | 26840071 | 78425364 | bytes</code></pre>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14457">CASSANDRA-14457</a></div>
+					</section>
+					<section>
+						<h2>More to come&#8230;</h2>
+						<ul>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14670">CASSANDRA-14670</a> adds 10 more system views for exposing metrics available from JMX.</li>
+						</ul>
+				</section>
+				</section>
+				<section>
+					<h1>Experimental Features</h1>
+				</section>
+				<section>
+					<h2>Transient Replication</h2>
+				</section>
+				<section>
+					<h2>Java 11 Support</h2>
+				</section>
+				<section>
+					<section>
+						<h2>Experimental Garbage Collectors</h2>
+					</section>
+					<section>
+						<h2>ZGC</h2>
+					</section>
+					<section>
+						<h2>Shenandoah</h2>
+					</section>
+					<section>
+						<h2>Testing New GCs</h2>
+						<ul>
+							<li></li>
+						</ul>
+					</section>
+					<section>
+						<h2>Results</h2>
+					</section>
+				</section>
+				<section>
+					<h1>Tooling</h1>
+				</section>
+				<section>
+					<section>
+						<h2>Full Query Log (fqltool)</h2>
+						<ul>
+							<li>Enables recording queries executed on a node to file</li>
+							<li>recordings can than be replayed in different environments</li>
+							<li>and then compared..</li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14618">CASSANDRA-14618</a>,&nbsp;<a href="https://issues.apache.org/jira/browse/CASSANDRA-14619">CASSANDRA-14619</a></div>
+					</section>
+					<section>
+						<h2>nodetool enablefullquerylog</h2>
+						<ul>
+							<li>Used to turn on full query logging</li>
+							<li>Configured to be safe to use in production</li>
+							<li>Dumps log in binary format (same format as BinAuditLogger)</li>
+						</ul>
+						<pre class="fragment"><code class="bash" data-trim>
+$ nodetool enablefullquerylog --path /tmp/simple
+$ cqlsh -e "INSERT INTO simple.tbl (k, v) values (2, 3)"
+$ cqlsh -e "SELECT v from simple.tbl where k = 2"
+$ nodetool disablefullquerylog</code></pre>
+					</section>
+					<section>
+						<h2>fqltool dump</h2>
+						<ul>
+							<li>Shows the queries executed</li>
+							<li>Can also follow logs to see queries as they happen</li>
+						</ul>
+						<pre class="fragment"><code class="bash" data-trim>
+$ tools/bin/fqltool dump /tmp/simple
+...
+Type: single-query
+Query start time: 1543694938788
+Protocol version: 4
+Generated timestamp:-9223372036854775808
+Generated nowInSeconds:1543694938
+Query: INSERT INTO simple.tbl (k, v) values (2, 3);
+Values: 
+...
+Type: single-query
+Query start time: 1543694960336
+Protocol version: 4
+Generated timestamp:-9223372036854775808
+Generated nowInSeconds:1543694960
+Query: SELECT v from simple.tbl where k = 2;
+Values: 
+</code></pre>
+						</ul>
+					</section>
+					<section>
+						<h2>fqltool replay</h2>
+						<ul>
+							<li>Replays query log against target node and records results</li>
+						</ul>
+						<pre class="fragment"><code class="bash" data-trim>
+$ tools/bin/fqltool replay 
+  --keyspace simple 
+  --results /tmp/results1 \
+  --store-queries /tmp/queries \
+  --target 127.0.0.1 /tmp/simple
+
+$ bin/cqlsh -e "drop table simple.tbl"
+
+$ tools/bin/fqltool replay --keyspace simple \
+  --results /tmp/results2 \
+  --target 127.0.0.1 /tmp/simple</code></pre>
+					</section>
+					<section>
+						<h2>fqltool compare</h2>
+						<ul>
+							<li>Compare the results of replaying query log in separate instances</li>
+						</ul>
+						<pre class="fragment"><code class="bash" data-trim>
+$ tools/bin/fqltool compare --queries /tmp/queries \
+  /tmp/results1/127.0.0.1 /tmp/results2/127.0.0.1
+
+Query against /tmp/results2/127.0.0.1 failure:
+Query = INSERT INTO simple.tbl (k, v) values (2, 3);, Values = 
+Message: table tbl does not exist
+...
+Query against /tmp/results2/127.0.0.1 failure:
+Query = SELECT v from simple.tbl where k = 2;, Values = 
+Message: table tbl does not exist
+MISMATCH:
+Query = SELECT v from simple.tbl where k = 2;, Values = 
+Results:
+/tmp/results1/127.0.0.1: 00000003
+/tmp/results2/127.0.0.1: null
+</code></pre>
+					</section>
+				</section>
+				<section>
+					<h1>Enhancements</h1>
+				</section>
+				<section>
+					<h2>Compactions</h2>
+				</section>
+				<section>
+					<h2>Streaming</h2>
+				</section>
+				<section>
+					<h2>Upgrades</h2>
+				</section>
+				<section>
+					<h2>Repair</h2>
+				</section>
+				<section>
+					<h2>CQL Enhancements</h2>
+				</section>
+				<section>
+					<h2>Summary</h2>
+				</section>
+				<section>
+					<h1>Thank You</h1>
+				</section>
 			</div>
 		</div>
 
@@ -37,6 +389,10 @@
 			// - https://github.com/hakimel/reveal.js#configuration
 			// - https://github.com/hakimel/reveal.js#dependencies
 			Reveal.initialize({
+				slideNumber: true,
+				history: true,
+				previewLinks: false,
+				width: '85%',
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
