@@ -51,6 +51,7 @@
 					<h2>Resources</h2>
 					<ul>
 						<li><a href="https://cassandra.apache.org/blog">Apache Cassandra Blog</a></li>
+						<li><a href="http://thelastpickle.com/blog">The Last Pickle Blog</a></li>
 						<li><a href="https://github.com/apache/cassandra/blob/trunk/CHANGES.txt">CHANGES</a> and <a href="https://github.com/apache/cassandra/blob/trunk/NEWS.txt">NEWS</a> files</li>
 						<li><a href="https://github.com/apache/cassandra/tree/trunk/doc">Trunk Docs</a></li>
 						<li><a href="https://issues.apache.org/jira/projects/CASSANDRA">CASSANDRA Jira Project</a></li>
@@ -407,10 +408,41 @@ CREATE TABLE tbl (k int primary key, v int)
 					<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14556">CASSANDRA-14556</a>,&nbsp;<a href="https://cassandra.apache.org/blog/2018/08/07/faster_streaming_in_cassandra.html">Hardware-bound Zero Copy Streaming in Apache Cassandra 4.0</a></div>
 				</section>
 				<section>
-					<h2>Repair</h2>
-					<ul>
-						<li>TODO: cover CASSANDRA-13910</li>
-					</ul>
+					<section>
+						<h2>Incremental Repair</h2>
+						<p>Incremental repair has a number of shortcomings:</p>
+						<ul>
+							<li class="fragment">compacted sstables between validation and anticompaction are marked unrepaired</li>
+							<li class="fragment">can really only safely run one session at at time between replicas that share data</li>
+							<li class="fragment">Doesn't work well with Leveled Compaction</li>
+							<li class="fragment">anticompaction is expensive</li>
+							<li class="fragment">Once you use incremental repair, you have to keep at it</li>
+						</ul>
+						<p class="fragment">General advisement is to use subrange repairs instead<a href="http://thelastpickle.com/blog/2017/12/14/should-you-use-incremental-repair.html">*</a>.</p>
+					</section>
+					<section>
+						<h2>Incremental Repair in 4.0</h2>
+						<ul>
+							<li style="font-size: 18pt;">Process is now transactional</li>
+							<li style="font-size: 18pt;" class="fragment">Anticompaction now performed at beginning in prepare phase (and not marked repaired)</li>
+							<li style="font-size: 18pt;" class="fragment">SSTables involved are locked until repair completes and can only be compacted with other sstables involved in that session</li>
+							<li style="font-size: 18pt;" class="fragment">If SSTable is part of ongoing compaction, will try to cancel wait up to a minute to see if it completes or cancels</li>
+							<li style="font-size: 18pt;" class="fragment">SSTables 'repairedAt' metadata is updated when repair completes and are unlocked for future compaction with other sstables</li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-9143">CASSANDRA-9143</a>,&nbsp;<a href="http://thelastpickle.com/blog/2018/09/10/incremental-repair-improvements-in-cassandra-4.html">Incremental Repair Improvements in Cassandra 4.0</a></div>
+					</section>
+					<section>
+						<h2>More Repair Work in 4.0</h2>
+						<ul>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14145">CASSANDRA-14145</a>: Detect inconsistencies in repaired data on the read path</li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14002">CASSANDRA-14002</a>: Don't use SHA256 when building Merkle Trees</li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-13454">CASSANDRA-13454</a>: Start Compaction when Incremental Repair Finishes</li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-13910">CASSANDRA-13910</a>: Eliminate background read repair</li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-10446">CASSANDRA-10446</a>: Allow repair with down replicas</a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-13257">CASSANDRA-13257</a>: Repair streaming preview</li>
+							<li>...and a bunch more</li>
+						</ul>
+					</section>
 				</section>
 				<section>
 					<h2>CQL Enhancements</h2>
