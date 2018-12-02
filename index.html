@@ -368,9 +368,23 @@ Results:
 				</section>
 				<section>
 					<h2>Repair</h2>
+					<ul>
+						<li>TODO: cover CASSANDRA-13910</li>
+					</ul>
 				</section>
 				<section>
 					<h2>CQL Enhancements</h2>
+				</section>
+				<section>
+					<h2>Other Changes</h2>
+					<ul>
+						<li>Thrift is no longer supported (<a href="https://issues.apache.org/jira/browse/CASSANDRA-11115">CASSANDRA-11115</a>)</li>
+						<li>COMPACT STORAGE is no longer supported</li>
+						<li>TTL is now considered in breaking timestamp ties</li>
+						<li>Can now have multiple C* nodes on same IP (<a href="https://issues.apache.org/jira/browse/CASSANDRA-7544">CASSANDRA-7544</a>)</li>
+						<li><code>nodetool refresh</code> replaced with <code>nodetool import</code> (<a href="https://issues.apache.org/jira/browse/CASSANDRA-6719">CASSANDRA-6719</a>)</li>
+						<li>Diagnostic Events (<a href="https://issues.apache.org/jira/browse/CASSANDRA-12944">CASSANDRA-12944</a>)</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Summary</h2>
