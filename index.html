@@ -48,11 +48,19 @@
 					</ul>
 				</section>
 				<section>
+					<h2>Resources</h2>
+					<ul>
+						<li><a href="https://cassandra.apache.org/blog">Apache Cassandra Blog</a></li>
+						<li><a href="https://github.com/apache/cassandra/blob/trunk/CHANGES.txt">CHANGES</a> and <a href="https://github.com/apache/cassandra/blob/trunk/NEWS.txt">NEWS</a> files</li>
+						<li><a href="https://github.com/apache/cassandra/tree/trunk/doc">Trunk Docs</a></li>
+						<li><a href="https://issues.apache.org/jira/projects/CASSANDRA">CASSANDRA Jira Project</a></li>
+					</ul>
+				</section>
+				<section>
 					<h2>Agenda</h2>
 					<ul>
 						<li>New Features</li>
 						<li>Evaluation of new Garbage Collectors</li>
-						<li>Tooling</li>
 						<li>Enhancements</li>
 						<li>Q&amp;A</li>
 					</ul>
@@ -65,10 +73,10 @@
 						<h2>Audit Logging</h2>
 						<ul>
 							<li>Provides visibility to how system is accessed and used</li>
-							<li>Valued by enterprises for especially when it comes to certifications and regulations</li>
+							<li>Valued by enterprises for especially when it comes to regulation compliance</li>
 							<li>Logs all login attempts in addition to all commands executed over client native protocol</li>
 						</ul>
-						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-7622">CASSANDRA-7622</a>,&nbsp;<a href="https://github.com/apache/cassandra/blob/trunk/doc/source/operating/audit_logging.rst">docs</a></div>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-7622">CASSANDRA-7622</a>,&nbsp;<a href="http://cassandra.apache.org/blog/2018/10/29/audit_logging_cassandra.html">Audit Logging Blog Post</a></div>
 					</section>
 					<section>
 						<h2>Configuration</h2>
@@ -231,38 +239,6 @@ cqlsh&gt; select * from system_views.sstable_tasks;
 				</section>
 				</section>
 				<section>
-					<h1>Experimental Features</h1>
-				</section>
-				<section>
-					<h2>Transient Replication</h2>
-				</section>
-				<section>
-					<h2>Java 11 Support</h2>
-				</section>
-				<section>
-					<section>
-						<h2>Experimental Garbage Collectors</h2>
-					</section>
-					<section>
-						<h2>ZGC</h2>
-					</section>
-					<section>
-						<h2>Shenandoah</h2>
-					</section>
-					<section>
-						<h2>Testing New GCs</h2>
-						<ul>
-							<li></li>
-						</ul>
-					</section>
-					<section>
-						<h2>Results</h2>
-					</section>
-				</section>
-				<section>
-					<h1>Tooling</h1>
-				</section>
-				<section>
 					<section>
 						<h2>Full Query Log (fqltool)</h2>
 						<ul>
@@ -355,16 +331,46 @@ Results:
 					</section>
 				</section>
 				<section>
+					<h1>Experimental Features</h1>
+				</section>
+				<section>
+					<h2>Transient Replication</h2>
+				</section>
+				<section>
+					<h2>Java 11 Support</h2>
+				</section>
+				<section>
+					<section>
+						<h2>Experimental Garbage Collectors</h2>
+					</section>
+					<section>
+						<h2>ZGC</h2>
+					</section>
+					<section>
+						<h2>Shenandoah</h2>
+					</section>
+					<section>
+						<h2>Testing New GCs</h2>
+						<ul>
+							<li></li>
+						</ul>
+					</section>
+					<section>
+						<h2>Results</h2>
+					</section>
+				</section>
+				<section>
 					<h1>Enhancements</h1>
 				</section>
 				<section>
-					<h2>Compactions</h2>
-				</section>
-				<section>
-					<h2>Streaming</h2>
-				</section>
-				<section>
-					<h2>Upgrades</h2>
+					<h2>Zero Copy Streaming</h2>
+					<ul>
+						<li>Existing streaming implementation creates a lot of garbage by serializing partitions into memory</li>
+						<li>New implementaton uses ZeroCopy to stream over the entire SSTable without reading into memory</li>
+						<li>Nice performance improvement, streaming is now bound by networking and file I/O</li>
+						<li>Enabled by default, can disable, control throttling (def: 25 MB/s) in cassandra.yaml</li>
+					</ul>
+					<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14556">CASSANDRA-14556</a>,&nbsp;<a href="https://cassandra.apache.org/blog/2018/08/07/faster_streaming_in_cassandra.html">Hardware-bound Zero Copy Streaming in Apache Cassandra 4.0</a></div>
 				</section>
 				<section>
 					<h2>Repair</h2>
@@ -374,6 +380,32 @@ Results:
 				</section>
 				<section>
 					<h2>CQL Enhancements</h2>
+				</section>
+				<section>
+					<section>
+						<h2><code>nodetool</code></h2>
+						<ul>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-9143"><code>repair_admin</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14436"><code>profileload</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-6719"><code>import</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14190"><code>getseeds/reloadseeds</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14222"><code>reloadssl</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-11720"><code>setmaxhintwindow</code></a>/<a href="https://issues.apache.org/jira/browse/CASSANDRA-13728"><code>handoffwindow</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14659"><code>enable|disableoldprotocolversions</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-13614"><code>get|setbatchlogreplaythrottle</code></a></li>
+							<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-12245"><code>get|setconcurrentviewbuilders</code></a></li>
+						</ul>
+						</section>
+					<section>
+						<h2><code>nodetool profileload</code></h2>
+					</section>
+				</section>
+				<section>
+					<h2>Upgrading</h2>
+					<ul>
+						<li>Capable of upgrading from any C* 3.0 and 3.x version</li>
+						<li><a href="https://issues.apache.org/jira/browse/CASSANDRA-14197">CASSANDRA-14197</a>: SSTables can be configured to be automatically upgraded (<code>automatic_sstable_upgrade</code>)</li>
+					</ul>
 				</section>
 				<section>
 					<h2>Other Changes</h2>
