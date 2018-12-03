@@ -373,16 +373,29 @@ CREATE TABLE tbl (k int primary key, v int)
 				</section>
 				<section>
 					<h2>Java 11 Support</h2>
+					<ul>
+						<li>Java 11 is now supported experimentally</li>
+						<li>This impacts the build process a little bit</li>
+						<li>Java Flight Recorder is now freely available</li>
+						<li>Access to new GCs that focus on low pause times</li>
+					</ul>
+					<div class="footer"><a href="http://thelastpickle.com/blog/2018/08/16/java11.html">Java 11 Support in Apache Cassandra 4.0</a></div>
 				</section>
 				<section>
 					<section>
 						<h2>Experimental Garbage Collectors</h2>
-					</section>
-					<section>
-						<h2>ZGC</h2>
+						<p>Two new and exciting GCs for Cassandra</p>
+						<ul>
+							<li><a href="">Shenandoah</a></li>
+							<li><a href="https://wiki.openjdk.java.net/display/zgc/Main">ZGC</a></li>
+						</ul>
+						<p>Both are region-based concurrent compacting GCs that focus on reducing pause times</p>
 					</section>
 					<section>
 						<h2>Shenandoah</h2>
+					</section>
+					<section>
+						<h2>ZGC</h2>
 					</section>
 					<section>
 						<h2>Testing New GCs</h2>
@@ -445,10 +458,14 @@ CREATE TABLE tbl (k int primary key, v int)
 					</section>
 				</section>
 				<section>
-					<h2>CQL Enhancements</h2>
-				</section>
-				<section>
 					<h2>Hybrid Speculative Retry</h2>
+					<ul>
+						<li>Speculative Retry can now combine constant and percentile based speculative retry</li>
+						<li>Useful for cases where a slow node causes percentile response time to increase</li>
+						<li>i.e.: <code>ALTER TABLE x WITH speculative_retry='MIN(99P,50ms)'</code> = speculate on the minimum of 99p response time and 50ms</li>
+					</ul>
+					<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14293">CASSANDRA-14293</a>,&nbsp;<a href="https://www.datastax.com/dev/blog/rapid-read-protection-in-cassandra-2-0-2">Rapid Read Protection in Cassandra</a></div>
+				</section>
 				<section>
 					<section>
 						<h2><code>nodetool</code></h2>
@@ -480,13 +497,21 @@ CREATE TABLE tbl (k int primary key, v int)
 					<ul>
 						<li>Thrift is no longer supported (<a href="https://issues.apache.org/jira/browse/CASSANDRA-11115">CASSANDRA-11115</a>)</li>
 						<li>COMPACT STORAGE is no longer supported</li>
+						<li>CQL now supports arithmatic operators (<code>+ - * / ^</code>)</li>
 						<li>TTL is now considered in breaking timestamp ties</li>
 						<li>Can now have multiple C* nodes on same IP (<a href="https://issues.apache.org/jira/browse/CASSANDRA-7544">CASSANDRA-7544</a>)</li>
+						<li>Netty now used for <a href="https://issues.apache.org/jira/browse/CASSANDRA-8457">internode messaging</a> and <a href="https://issues.apache.org/jira/browse/CASSANDRA-12229">streaming</a></li>
 						<li>Diagnostic Events (<a href="https://issues.apache.org/jira/browse/CASSANDRA-12944">CASSANDRA-12944</a>)</li>
 					</ul>
 				</section>
 				<section>
 					<h2>Summary</h2>
+					<ul>
+						<li>Features that have been added are more operational then developer facing</li>
+						<li>Experimental Features allow phasing in new functionality while signaling more works needs to be done</li>
+						<li>Plenty of useful and needed enhancements to existing components</li>
+						<li>Improved tooling to assist operators</li>
+					</ul>
 				</section>
 				<section>
 					<h1>Thank You</h1>
