@@ -347,28 +347,37 @@ Results:
 					<section>
 						<h2>Transient Replication</h2>
 						<ul>
-							<li>Increase availability without committing to full replicas</li>
-							<li class="fragment">When defining replication factor, specify number of transient replicas</li>
-							<li class="fragment">'Transient Replicas' only store data when not enough normal replicas are available, or if normal replicas are slow</li>
-							<li class="fragment">For reads, if enough replicas are available for CL and data is available on a normal replicas, request can succeed</li>
-							<li class="fragment">Data is removed from transient replicas on successful incremental repair to normal replicas</li>
+							<li>Users desire high availability with <code>QUORUM</code> consistency</li>
+							<li class="fragment">Replication Factor 3 with <code>QUORUM</code> can only tolerate 1 node being down</li>
+							<li class="fragment">Need RF 5 to tolerate 2 nodes</li>
+							<li class="fragment">..but the cost of replication data 5 times is expensive!</li>
 						</ul>
-						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14404">CASSANDRA-14404</a></div>
 					</section>
 					<section>
-						<h2>Using Transient Replication</h2>
+						<h2>Transient Replication</h2>
 						<ul>
-							<li>Set <code>enable_transient_replication</code> to true in <code>cassandra.yaml</code></li>
-							<li>Set <code>num_tokens</code> to 1 (does not support vnodes yet)</li>
-						</ul>
-						<pre><code class="sql" data-trim>
+							<li>Increase availability without committing to full replicas</li>
+							<li class="fragment">'Transient Replicas' only store data when not enough normal replicas are available, or if normal replicas are slow</li>
+							<li class="fragment">When defining replication factor, specify number of transient replicas
+							<pre><code class="sql" data-trim>
 CREATE KEYSPACE tr WITH replication = {
   'class': 'NetworkTopologyStrategy',
   'datacenter1': '5/2'
 };
 
 CREATE TABLE tbl (k int primary key, v int) 
-  WITH read_repair = 'NONE';</code></pre>
+  WITH read_repair = 'NONE';</code></pre></li>
+						</ul>
+						<div class="footer"><a href="https://issues.apache.org/jira/browse/CASSANDRA-14404">CASSANDRA-14404</a></div>
+					</section>
+					<section>
+						<h2>Transient Replication</h2>
+						<ul>
+							<li>For reads, if enough replicas are available for CL and data is available on a normal replica, request can succeed</li>
+							<li class="fragment">Data is removed from transient replicas on successful incremental repair to normal replicas</li>
+							<li class="fragment">In the particular case of 5/2, you save 40% over disk density over RF 5</li>
+							<li class="fragment">Concept can also be applied at DC level with <code>EACH_QUORUM</code></li>
+						</ul>
 					</section>
 				</section>
 				<section>
