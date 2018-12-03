@@ -551,6 +551,32 @@ CREATE TABLE tbl (k int primary key, v int)
 						</section>
 					<section>
 						<h2><code>nodetool profileload</code></h2>
+						<pre><code class="bash" style="font-size: 10pt; line-height: 1;" data-trim>cqlsh&gt; nodetool profileload
+
+Frequency of reads by partition:
+  Table        Partition Count +/-
+  basic.wide   row1      75424 0 
+  basic.cas    p1        656   0
+  system.paxos 7031      550   0 
+
+  Frequency of writes by partition:
+  Table        Partition Count +/-
+  system.paxos 7031      585   0 
+  basic.cas    p1        112   0 
+
+  Frequency of cas contentions by partition:
+  Table     Partition Count +/-
+  basic.cas p1        76    0 
+
+  Max mutation size by partition:
+  Table      Partition Bytes
+  basic.wide row0      1056
+  basic.wide row7      1056
+
+  Longest read query times:
+  Query                                                Microseconds
+  SELECT * FROM basic.wide WHERE key = row1 LIMIT 5000 25681       
+  SELECT * FROM basic.wide WHERE key = row1 LIMIT 5000 16131</code></pre>
 					</section>
 				</section>
 				<section>
