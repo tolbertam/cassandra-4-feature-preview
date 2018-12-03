@@ -386,25 +386,84 @@ CREATE TABLE tbl (k int primary key, v int)
 						<h2>Experimental Garbage Collectors</h2>
 						<p>Two new and exciting GCs for Cassandra</p>
 						<ul>
-							<li><a href="">Shenandoah</a></li>
+							<li><a href="https://wiki.openjdk.java.net/display/shenandoah/Main">Shenandoah</a></li>
 							<li><a href="https://wiki.openjdk.java.net/display/zgc/Main">ZGC</a></li>
 						</ul>
-						<p>Both are region-based concurrent compacting GCs that focus on reducing pause times</p>
+						<p>Both are concurrent compacting GCs that focus on reducing pause times to sub milliseconds</p>
 					</section>
 					<section>
 						<h2>Shenandoah</h2>
+						<ul>
+							<li>Non-generational concurrent compactor</li>
+							<li>Heap is divided into 2048 even-sized regions</li>
+							<li>Works with JDK8+, but requires custom build</li>
+						</ul>
+						<img src="images/shenandoah-gc-cycle.png"/>
 					</section>
 					<section>
 						<h2>ZGC</h2>
+						<ul>
+							<li style="font-size: 18pt;">Aim is to support multiple terabyte heaps with max 10ms pause time, with only 15% throughput reduction</li>
+							<li style="font-size: 18pt;">Also a non-generational concurrent compactor</li>
+							<li style="font-size: 18pt;">Heap is divided into regions (ZPages) of varying sizes (2MB, 32MB, X*2MB)</li>
+							<li style="font-size: 18pt;">Experimental in JDK 11+</li>
+						</ul>
+						<img src="images/zgc_cycle.png"/>
 					</section>
 					<section>
-						<h2>Testing New GCs</h2>
+						<h2>Testing ZGC</h2>
 						<ul>
-							<li></li>
+							<li>3 node i3.4xlarge C* cluster, 1 c5.9xlarge stress client</li>
+							<li>C* Stress write iot workload (98 byte rows)</li>
+							<li>Ran at fixed rate of 20k ops/sec (enough to generate roughly ~30% cpu load)</li>
+							<li>Also include CMS and G1 using recommended settings</li>
+						</ul>
+					</section>
+					<section>
+						<h2>GC Tuning Parameters</h2>
+						<ul>
+							<li>G1 params: <div style="font-size: 18pt;">-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:G1RSetUpdatingPauseTimePercent=5 -XX:MaxGCPauseMillis=500 -XX:InitiatingHeapOccupancyPercent=70 -XX:ParallelGCThreads=16 -XX:ConcGCThreads=16 -Xms32765M -Xmx32765M -Xmn1600M</div></li>
+							<li>CMS params (default): <div style="font-size: 18pt;">-XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=1 -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSWaitDuration=10000 -XX:+CMSParallelInitialMarkEnabled -XX:+CMSEdenChunksRecordAlways -XX:+CMSClassUnloadingEnabled -Xms8192M -Xmx8192M -Xmn1600M</div></li>
+							<li>ZGC params: <div style="font-size: 18pt;">-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseLargePages -Xms32765M -Xmx32765M</div></li>
 						</ul>
 					</section>
 					<section>
 						<h2>Results</h2>
+						<table>
+							<thead>
+								<tr>
+									<th>GC</th>
+									<th>mean</th>
+									<th>95p</th>
+									<th>99p</th>
+									<th>999p</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>CMS</td>
+									<td>3.0ms</td>
+									<td>2.7ms</td>
+									<td>76.6ms</td>
+									<td>187.4ms</td>
+								</tr>
+								<tr>
+									<td>G1</td>
+									<td>5.9ms</td>
+									<td>0.7ms</td>
+									<td>192.0ms</td>
+									<td>349.7ms</td>
+								</tr>
+								<tr>
+									<td>ZGC</td>
+									<td>0.9ms</td>
+									<td>0.5ms</td>
+									<td>3.5ms</td>
+									<td>149.0ms</td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="footer"><a href="/write-stress.html">Stress Report</a></div>
 					</section>
 				</section>
 				<section>
